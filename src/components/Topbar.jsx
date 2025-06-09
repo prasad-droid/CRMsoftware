@@ -1,5 +1,6 @@
 import React from "react";
 import { FaBell, FaSearch, FaUserCircle } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function Topbar() {
   return (
@@ -10,7 +11,11 @@ export default function Topbar() {
       </div>
       <div>
         <FaBell className="me-3" />
-        <FaUserCircle />
+        <Link to="/profile" className="text-decoration-none text-dark">
+          <FaUserCircle />
+          <span className="me-2">Profile</span>
+          {/* Using FaUserCircle icon for profile */}
+        </Link>
       </div>
     </div>
   );

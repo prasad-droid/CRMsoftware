@@ -24,10 +24,12 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [filterStatus, setFilterStatus] = useState(null);
 
+  // Apply status filter if set
   const filteredLeads = filterStatus
     ? leads.filter((lead) => lead.status === filterStatus)
     : leads;
 
+  // Pie Chart Data: Leads by Status
   const pieData = {
     labels: [...new Set(filteredLeads.map((lead) => lead.status))],
     datasets: [
@@ -50,6 +52,7 @@ export default function Dashboard() {
     ],
   };
 
+  // Count leads by source and by month
   const leadsBySource = filteredLeads.reduce((acc, lead) => {
     acc[lead.source] = (acc[lead.source] || 0) + 1;
     return acc;
@@ -64,6 +67,30 @@ export default function Dashboard() {
     return acc;
   }, {});
 
+  // Convert those objects to chart-friendly format
+  const barDataSource = {
+    labels: Object.keys(leadsBySource),
+    datasets: [
+      {
+        label: "Leads by Source",
+        data: Object.values(leadsBySource),
+        backgroundColor: "#0d6efd",
+      },
+    ],
+  };
+
+  const barDataMonth = {
+    labels: Object.keys(leadsPerMonth),
+    datasets: [
+      {
+        label: "Leads Per Month",
+        data: Object.values(leadsPerMonth),
+        backgroundColor: "#198754",
+      },
+    ],
+  };
+
+  // Fetch leads from API on load
   useEffect(() => {
     api
       .get("/leads")
@@ -71,6 +98,7 @@ export default function Dashboard() {
       .catch(console.error);
   }, []);
 
+  // Summary cards (status counts)
   const countBy = (key) => {
     return leads.reduce((acc, lead) => {
       acc[lead[key]] = (acc[lead[key]] || 0) + 1;
@@ -79,8 +107,6 @@ export default function Dashboard() {
   };
 
   const statusCounts = countBy("status");
-  const sourceCounts = countBy("source");
-
   const totalLeads = leads.length;
 
   return (
@@ -104,7 +130,7 @@ export default function Dashboard() {
               <div
                 className="card text-white bg-primary h-100"
                 style={{ cursor: "pointer" }}
-                onClick={() => setFilterStatus(status)} // Add filter logic
+                onClick={() => setFilterStatus(status)}
               >
                 <div className="card-body">
                   <h5 className="card-title text-capitalize">
@@ -127,7 +153,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Charts */}
+      {/* Charts Section */}
       <div className="row mb-4">
         <div className="col-md-6">
           <div className="card p-3">
@@ -144,7 +170,7 @@ export default function Dashboard() {
           <div className="card p-3">
             <h5 className="card-title">Leads by Source</h5>
             <Bar
-              data={leadsBySource}
+              data={barDataSource}
               options={{
                 responsive: true,
                 plugins: {
@@ -154,11 +180,12 @@ export default function Dashboard() {
             />
           </div>
         </div>
+
         <div className="col-12 mt-4">
           <div className="card p-3">
             <h5 className="card-title">Leads Created Per Month</h5>
             <Bar
-              data={leadsPerMonth}
+              data={barDataMonth}
               options={{
                 responsive: true,
                 scales: {
@@ -170,10 +197,30 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Leads */}
+      {/* Recent Leads Placeholder */}
       <div className="card">
         <div className="card-header">Recent Leads</div>
-        <ul className="list-group list-group-flush"></ul>
+        <ul className="list-group list-group-flush">
+        {[...filteredLeads]
+  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  .slice(0, 5)
+  .map((lead) => (
+    <li key={lead.id} className="list-group-item">
+      <div className="d-flex justify-content-between">
+        <div>
+          <strong>{lead.name}</strong> <br />
+          <small className="text-muted">
+            Source: {lead.source} | Status: {lead.status.replace("_", " ")}
+          </small>
+        </div>
+        <div className="text-muted">
+          {new Date(lead.created_at).toLocaleDateString()}
+        </div>
+      </div>
+    </li>
+  ))}
+
+        </ul>
       </div>
     </div>
   );

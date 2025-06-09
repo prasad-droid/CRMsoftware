@@ -41,6 +41,12 @@ export default function Sidebar() {
             </ul>
           )}
         </li>
+        <li className="nav-item">
+          <Link to="/followups" className="nav-link text-white">
+            <FaTachometerAlt className="me-2" />
+            Follow-ups
+          </Link>
+        </li>
 
         <li className="nav-item">
           <Link to="/contacts" className="nav-link text-white">
